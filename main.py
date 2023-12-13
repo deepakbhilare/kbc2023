@@ -49,6 +49,7 @@ def quiz():
         question = question_data[random_index]['question']
         options = options_data[random_index]
 
+
         if 'answer' in request.form:
             print(str(random_index) + ' : ' + request.form['answer'])
 
