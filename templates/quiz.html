@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Question</title>
+</head>
+<body>
+    <h2>Welcome, {{ username }}!</h2>
+    <p>{{ question }}</p>
+    <form action="/quiz" method="post">
+        {% set alphabet_options = ['a', 'b', 'c', 'd'] %}
+        {% for option in options %}
+            {% set index = loop.index0 %}
+            <input type="radio" id="{{ alphabet_options[index] }}" name="answer" value="{{ alphabet_options[index] }}">
+            <label for="{{ alphabet_options[index] }}">{{ option }}</label><br>
+        {% endfor %}
+        <input type="hidden" name="correct_answer" value="{{ correct_answer }}">
+        <input type="hidden" name="username" value="{{ username }}">
+        <br>
+        <button type="submit">Submit Answer</button>
+    </form>
+</body>
+</html>
