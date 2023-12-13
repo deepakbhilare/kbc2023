@@ -4,8 +4,7 @@ import os
 import sys
 import csv
 from io import StringIO
-
-
+import game
 
 app = Flask(__name__)
 
@@ -45,19 +44,20 @@ def index():
 
 @app.route('/quiz', methods=['POST', 'GET'])
 def quiz():
-    if request.method == 'POST':
-        username = request.form['username']
-        random_index = random.randint(0, len(question_data) - 1)
-        question = question_data[random_index]['question']
-        options = options_data[random_index]
+    question, options = game()
 
+    # if request.method == 'POST':
+    #     username = request.form['username']
+    #     random_index = random.randint(0, len(question_data) - 1)
+    #     question = question_data[random_index]['question']
+    #     options = options_data[random_index]
 
-        if 'answer' in request.form:
-            print(str(random_index) + ' : ' + request.form['answer'])
+    #     if 'answer' in request.form:
+    #         print(str(random_index) + ' : ' + request.form['answer'])
 
-        return render_template('quiz.html', username=username, question=question, options=options)
+    return render_template('quiz.html', username="username", question=question, options=options)
 
-    return render_template('index.html')
+    #return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
