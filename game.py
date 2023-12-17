@@ -2,6 +2,7 @@ import csv
 import random
 import os
 
+random_number = 0
 serial_numbers = []
 questions = []
 difficulties = []
@@ -22,6 +23,8 @@ price_own = 0
 
 # Questions file
 file_path = '/Users/abhay/Documents/flask/website/questions.csv'
+#correct_answer = os.path.abspath('/Users/abhay/Documents/flask/website/correctanswers.csv')
+
 
 def which_lifeline_available():
     return change_question, change_option
@@ -48,13 +51,19 @@ with open(file_path, newline="") as csvfile:
         option3.append(opt3)
         option4.append(opt4)
 
-with open("/Users/abhay/Documents/flask/website/correctanswers.csv") as file:
-    answer = file.read()
-    for check in answer:
-        if check == '\n':
-            continue
-        rightanswer = check
-        correctanswer.append(rightanswer)
+file_path = '/Users/abhay/Documents/flask/website/correctanswers.csv'
+with open(file_path, 'r') as file:
+    lines = file.readlines()
+    for line in lines:
+        answer = line.strip()  # Remove newline characters and any leading/trailing whitespace
+        correctanswer.append(answer)
+
+def get_current_state():
+    global select_index
+    random_number = randoms()
+    current_question = getQuestion()
+    current_options = getOption()
+    return current_question, current_options
 
 def save_player_data(player_name, correctanswer_count, price_own, status_1, select_index):
     with open('player_data.txt', 'a') as player_data_file:
@@ -102,7 +111,9 @@ def screen(user_name, questions, options, correctanswer_count, price_won):
         else:
             print("Invalid input. Please enter 'a', 'b', 'c', or 'd'.")
 
-def randoms(select_index):
+def randoms():
+    global random_number
+    global select_index
     random_number = random.randint(0, len(serial_numbers) - 1)
     while random_number in select_index:
         random_number = random.randint(0, len(serial_numbers) - 1)
@@ -115,6 +126,84 @@ def checkAndCreateFile(fName):
     else:
         with open(fName, 'w') as fp:
             return
+
+
+def get_user_answer():
+    def get_user_answer():
+        while True:
+            user_input = input("Your answer: ")
+
+            if user_input in ['a', 'b', 'c', 'd']:
+                return user_input
+
+            elif user_input.lower() == 'change' and change_question > 0:
+                change_question -= 1
+                return 'change'
+
+
+def check_answer(user_answer):
+    global random_number
+    global correctanswer_count
+    global price_own
+
+    # 0 = failure
+    # 1 = success
+    # 2 = change question lifeline
+    # 3 = change option lifeline
+    returnValue = 0
+
+    print("correct answer : ")
+    print("correct answer:",correctanswer)
+    print("user answer:",user_answer)
+    print("print randomm no:",random_number)
+    print("correct answer:",correctanswer[random_number])
+
+    if user_answer == correctanswer[random_number]:
+        print("Correct! You win.")
+        correctanswer_count += 1
+        price_own += 1000
+        returnValue = 1
+
+
+        if correctanswer_count == len(serial_numbers):
+            status_1 = "complete"
+            # Save the data of the user in the player_data file
+            save_player_data(player_name, correctanswer_count, price_own, status_1, str(select_index))
+    elif user_answer == 'change_question':
+        returnValue = 2
+    elif user_answer == 'change_option':
+        returnValue = 3
+    else:
+        returnValue = 0
+        status_1 = "incomplete"
+        print("Incorrect! You fail.")
+        save_player_data(player_name, correctanswer_count, price_own, status_1, str(select_index))
+    return returnValue
+
+
+
+
+def getQuestion():
+    global random_number
+    r = randoms()
+    #print("random number generated : " + str(r))
+    current_question = (questions[random_number], difficulties[random_number])
+    return current_question
+
+def getOption():
+    global random_number
+    current_options = (option1[random_number], option2[random_number], option3[random_number], option4[random_number])
+    return current_options
+
+
+def which_lifeline_available():
+    return change_question, change_option
+
+def price(price_won):
+    return price_won
+
+def score(correctanswer_count):
+    return correctanswer_count
 
 def game():
     global select_index
@@ -129,6 +218,7 @@ def game():
 
     file_path1 = 'player_data.txt'
     with open(file_path1, newline="") as csvfile:
+        global random_number
         read = csv.reader(csvfile)
         player_name = ""  # Initialize player_name here
         for ptr in read:
@@ -142,64 +232,52 @@ def game():
                 select_index.update(question_asked_set)
                 status = status_1
 
-                if status == "incomplete":
-                    print("Continue the previous game? (yes/no)")
-                    permission = input()
-                    if permission.lower() == 'yes':
-                        break
-                else:
-                    print("Start the game again? (yes/no)")
-                    permission = input()
-                    if permission.lower() == 'yes':
-                        break
+                # if status == "incomplete":
+                #     print("Continue the previous game? (yes/no)")
+                #     permission = input()
+                #     if permission.lower() == 'yes':
+                #         break
+                # else:
+                #     print("Start the game again? (yes/no)")
+                #     permission = input()
+                #     if permission.lower() == 'yes':
+                #         break
 
 
-    if permission.lower() == 'yes':
-        print("enter the your name ")
-        player_name=input()
+            if permission.lower() == 'yes':
+                print("enter the your name ")
+                # player_name=input()
 
-        while True:
-            random_number = randoms(select_index)
-            current_question = (questions[random_number], difficulties[random_number])
-            current_options = (option1[random_number], option2[random_number], option3[random_number], option4[random_number])
-            #user_answer = screen(player_name, current_question, current_options, correctanswer_count, price_own)
-            return current_question, current_options
+                while True:
+                    random_number = randoms()
+                    current_questions=getQuestion()
+                    #current_question = (questions[random_number], difficulties[random_number])
+                    current_options=getOption()
+
+                    #current_options = (option1[random_number], option2[random_number], option3[random_number], option4[random_number])
+                    #user_answer = screen(player_name, current_questions, current_options, correctanswer_count, price_own)
+                    #result = check_answer(user_answer, correctanswer[random_number], random_number)
+                    #return current_question, current_options
+                    return current_questions, current_options
 
             select_index_string = str(select_index)
 
-            if user_answer == correctanswer[random_number]:
-                print("Correct! You win.")
-                correctanswer_count += 1
-                price_own += 1000
-
-                if correctanswer_count == len(serial_numbers):
-                    status_1 = "complete"
-                    # Save the data of the user in the player_data file
-                    save_player_data(player_name, correctanswer_count, price_own, status_1, select_index_string)
-
-            elif user_answer == 'change':
+            if result == 'change':
                 continue
-            else:
-                status_1 = "incomplete"
-                print("Incorrect! You fail.")
-                break
 
-        # save the data of the user in the player_data file
-        save_player_data(player_name, correctanswer_count, price_own, status_1, select_index_string)
+            while True:
+                play_again = input("Do you want to play again? (yes/no)")
+                if play_again in ['yes', 'no']:
+                    break
+                else:
+                    print("Invalid input. Please enter 'yes' or 'no'.")
 
-        while True:
-            play_again = input("Do you want to play again? (yes/no)")
-            if play_again in ['yes', 'no']:
-                break
-            else:
-                print("Invalid input. Please enter 'yes' or 'no'.")
-
-        if play_again == 'yes':
-            game()
+                if play_again == 'yes':
+                    game()
+                else:
+                    print("Goodbye!")
         else:
             print("Goodbye!")
-    else:
-        print("Goodbye!")
-
+if __name__=="__game__":
 # Call the game function
-game()
+    game()
